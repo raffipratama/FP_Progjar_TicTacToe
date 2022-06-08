@@ -8,7 +8,7 @@ import random
 window = tk.Tk()
 window.title("Tic-Tac-Toe Server")
 
-# Top frame consisting of two buttons widgets (i.e. btnStart, btnStop)
+# Top frame yang terdiri dari button start dan stop
 topFrame = tk.Frame(window)
 btnStart = tk.Button(topFrame, text="Start", command=lambda : start_server())
 btnStart.pack(side=tk.LEFT)
@@ -16,7 +16,7 @@ btnStop = tk.Button(topFrame, text="Stop", command=lambda : stop_server(), state
 btnStop.pack(side=tk.LEFT)
 topFrame.pack(side=tk.TOP, pady=(5, 0))
 
-# Middle frame consisting of two labels for displaying the host and port info
+# Middle frame yang terdiri dari dua label untuk menampilkan host dan port info
 middleFrame = tk.Frame(window)
 lblHost = tk.Label(middleFrame, text = "Address: X.X.X.X")
 lblHost.pack(side=tk.LEFT)
@@ -24,7 +24,7 @@ lblPort = tk.Label(middleFrame, text = "Port:XXXX")
 lblPort.pack(side=tk.LEFT)
 middleFrame.pack(side=tk.TOP, pady=(5, 0))
 
-# The client frame shows the client area
+# Client Frame
 clientFrame = tk.Frame(window)
 lblLine = tk.Label(clientFrame, text="**********Client List**********").pack()
 scrollBar = tk.Scrollbar(clientFrame)
@@ -45,7 +45,7 @@ clients_names = []
 player_data = []
 
 
-# Start server function
+# Fungsi start server
 def start_server():
     global server, HOST_ADDR, HOST_PORT # code is fine without this
     btnStart.config(state=tk.DISABLED)
@@ -62,7 +62,7 @@ def start_server():
     lblPort["text"] = "Port: " + str(HOST_PORT)
 
 
-# Stop server function
+# fungsi start server
 def stop_server():
     global server
     btnStart.config(state=tk.NORMAL)
@@ -75,18 +75,18 @@ def accept_clients(the_server, y):
             client, addr = the_server.accept()
             clients.append(client)
 
-            # use a thread so as not to clog the gui thread
+            # menggunakan thread agar tidak menghambat gui thread
             threading._start_new_thread(send_receive_client_message, (client, addr))
 
 
-# Function to receive message from current client AND
-# Send that message to other clients
+# Fungsi untuk menerima pesan dari klien saat ini dan
+# mengirim pesan ke klien lain
 def send_receive_client_message(client_connection, client_ip_addr):
     global server, client_name, clients, player_data, player0, player1
 
     client_msg = " "
 
-    # send welcome message to client
+    # mengirim pesan "welcome" ke klien
     client_name = client_connection.recv(4096).decode()
 
     if len(clients) < 2:
@@ -95,13 +95,13 @@ def send_receive_client_message(client_connection, client_ip_addr):
         client_connection.send("welcome2".encode())
 
     clients_names.append(client_name)
-    update_client_names_display(clients_names)  # update client names display
+    update_client_names_display(clients_names)  # memperbarui display nama klien
 
     if len(clients) > 1:
         sleep(1)
         symbols = ["O", "X"]
 
-        # send opponent name and symbol
+        # mengirim nama dan simbol lawan
         out1 = "opponent_name$" + clients_names[1] + "symbol" + symbols[0]
         out2 = "opponent_name$" + clients_names[0] + "symbol" + symbols[1]
         clients[0].send(out1.encode())
@@ -110,30 +110,30 @@ def send_receive_client_message(client_connection, client_ip_addr):
 
     while True:
 
-        # get the player choice from received data
+        # mendapatkan pilihan pemain dari data yang diterima
         data = client_connection.recv(4096).decode()
         if not data: break
 
-        # player x,y coordinate data. forward to the other player
+        # data koordinat pemain (x,y). dikirimkan ke pemain lain
         if data.startswith("$xy$"):
-            # is the message from client1 or client2?
+            # memeriksa apakah pesan dari klien1 atau klien2
             if client_connection == clients[0]:
-                # send the data from this player (client) to the other player (client)
+                # mengirim data dari klien satu ke klien lainnya
                 clients[1].send(data.encode())
             else:
-                # send the data from this player (client) to the other player (client)
+                # mengirim data dari klien satu ke klien lainnya
                 clients[0].send(data.encode())
 
-    # find the client index then remove from both lists(client name list and connection list)
+    # temukan indeks klien lalu hapus dari kedua daftar (daftar nama klien dan daftar koneksi)
     idx = get_client_index(clients, client_connection)
     del clients_names[idx]
     del clients[idx]
     client_connection.close()
 
-    update_client_names_display(clients_names)  # update client names display
+    update_client_names_display(clients_names)  # memperbarui display nama klien
 
 
-# Return the index of the current client in the list of clients
+# Kembalikan indeks klien saat ini dalam daftar klien
 def get_client_index(client_list, curr_client):
     idx = 0
     for conn in client_list:
@@ -144,8 +144,8 @@ def get_client_index(client_list, curr_client):
     return idx
 
 
-# Update client name display when a new client connects OR
-# When a connected client disconnects
+# Perbarui tampilan nama klien saat klien baru terhubung atau
+# Saat koneksi klien saat ini terputus
 def update_client_names_display(name_list):
     tkDisplay.config(state=tk.NORMAL)
     tkDisplay.delete('1.0', tk.END)

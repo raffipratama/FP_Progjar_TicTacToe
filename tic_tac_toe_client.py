@@ -20,7 +20,7 @@ top_welcome_frame.pack(side=tk.TOP)
 top_frame = tk.Frame(window_main)
 
 
-# network client
+# jaringan klien
 client = None
 HOST_ADDR = "192.168.0.105"
 HOST_PORT = 8080
@@ -92,7 +92,7 @@ def init(arg0, arg1):
 
 def get_cordinate(xy):
     global client, your_turn
-    # convert 2D to 1D cordinate i.e. index = x * num_cols + y
+    # merubah 2 dimensi menjadi 1 dimensi koordinat dengan algoritma index = x * num_cols + y
     label_index = xy[0] * num_cols + xy[1]
     label = list_labels[label_index]
 
@@ -102,12 +102,12 @@ def get_cordinate(xy):
             label["label"]["text"] = your_details["symbol"]
             label["ticked"] = True
             label["symbol"] = your_details["symbol"]
-            # send xy cordinate to server
+            # mengirimkan koordinat xy ke server
             coordinate = "$xy$" + str(xy[0]) + "$" + str(xy[1])
             client.send(coordinate.encode())
             your_turn = False
 
-            # Does this play leads to a win or a draw
+            # Mengecek apakah permainannya merupakan kemenangan atau seri
             result = game_logic()
             if result[0] is True and result[1] != "":  # a win
                 your_details["score"] = your_details["score"] + 1
@@ -128,7 +128,7 @@ def get_cordinate(xy):
         lbl_status["text"] = "STATUS: Wait for your turn!"
         lbl_status.config(foreground="red")
 
-        # send xy coordinate to server to server
+        # mengirimkan koordinat xy ke server
 
 
 # [(0,0) -> (0,1) -> (0,2)], [(1,0) -> (1,1) -> (1,2)], [(2,0), (2,1), (2,2)]
@@ -224,7 +224,7 @@ def check_diagonal():
     return [winner, win_symbol]
 
 
-# it's a draw if grid is filled
+# Seri apabila semua telah terisi
 def check_draw():
     for i in range(len(list_labels)):
         if list_labels[i]["ticked"] is False:
@@ -263,9 +263,8 @@ def connect_to_server(name):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((HOST_ADDR, HOST_PORT))
-        client.send(name.encode())  # Send name to server after connecting
-        # start a thread to keep receiving message from server
-        # do not block the main thread :)
+        client.send(name.encode())  # Mengirim nama ke server setelah menghubungkan
+        # Memulai thread untuk terus menerima pesan dari server
         threading._start_new_thread(receive_message_from_server, (client, "m"))
         top_welcome_frame.pack_forget()
         top_frame.pack(side=tk.TOP)
@@ -300,7 +299,7 @@ def receive_message_from_server(sck, m):
             opponent_details["name"] = temp[0:name_index]
             your_details["symbol"] = temp[symbol_index:len(temp)]
 
-            # set opponent symbol
+            # Menetapkan simbol musuh
             if your_details["symbol"] == "O":
                 opponent_details["symbol"] = "X"
             else:
@@ -308,7 +307,7 @@ def receive_message_from_server(sck, m):
 
             lbl_status["text"] = "STATUS: " + opponent_details["name"] + " is connected!"
             sleep(3)
-            # is it your turn to play? hey! 'O' comes before 'X'
+            # Mengecek giliran 'O' dimulai sebelum 'X'
             if your_details["symbol"] == "O":
                 lbl_status["text"] = "STATUS: Your turn!"
                 your_turn = True
@@ -322,7 +321,7 @@ def receive_message_from_server(sck, m):
             _x = temp[0:temp.find("$")]
             _y = temp[temp.find("$") + 1:len(temp)]
 
-            # update board
+            # memperbarui papan
             label_index = int(_x) * num_cols + int(_y)
             label = list_labels[label_index]
             label["symbol"] = opponent_details["symbol"]
@@ -330,7 +329,7 @@ def receive_message_from_server(sck, m):
             label["label"].config(foreground=opponent_details["color"])
             label["ticked"] = True
 
-            # Does this cordinate leads to a win or a draw
+            # Mengecek apakah koordinat mengarah ke menang atau seri
             result = game_logic()
             if result[0] is True and result[1] != "":  # opponent win
                 opponent_details["score"] = opponent_details["score"] + 1
@@ -354,9 +353,9 @@ def receive_message_from_server(sck, m):
 
 window_main.mainloop()
 
-# connect and send name to server
-# when two player connects, server sends opponent name, symbol
-# p1: $name$charles$symbol$O
-# client with symbol of O starts
-# when client receive opponent position, then it's their turn to play
-# check if I win or draw each time I choose play or receive cordinate
+# Menghubungkan dan mengirim nama ke server
+# Saat dua pemain terhubung, server mengirimkan nama dan simbol musuh
+# Contoh pemain 1: $name$charles$symbol$O
+# Klien dengan simbol O memulai dahulu
+# Saat klien menerima posisi musuh, maka saatnya giliran pemain itu bermain
+# Mengecek apakah menang atau seri setiap memilih bermain atau menerima koordinat
